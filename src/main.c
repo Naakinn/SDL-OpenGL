@@ -1,15 +1,14 @@
 #include <SDL2/SDL.h>
-#include "glad/glad.h"
+#include "shader.h"
 
-#define VERTEXPOSSIZE 64 
-#define VERTEXC 9 
+#define VERTEXATTRSTRIDE GL_ZERO 
 #define VERTEXATTRSIZE 3
 #define COLORATTRSIZE 3
-#define VERTEXATTRSTRIDE GL_ZERO 
 
 
 int gWidth = 800; 
 int gHeight = 600; 
+GLuint vertexNumber; 
 SDL_Window* glWindow = NULL; 
 SDL_GLContext* glContext = NULL; 
 
@@ -26,71 +25,7 @@ struct VBO {
 }   glVBOVertex = { 0, 0 },
 	glVBOColor = { 0, 1 };
 
-char* loadShader(const char* filepath) { 
-	FILE* istream = fopen(filepath, "r"); 
-	
-	if (istream == NULL) { 
-		printf("error occured while opening shader file\n");
-		exit(1); 
-	}
-	
-	size_t size; 
-	char c; 
-	int i; 
-	
-	for (size = 0; (c = fgetc(istream)) != EOF; ++size) 
-		; 
-	char* shaderSource = (char*)malloc(size * sizeof(char) + 1);
-	
-	if (shaderSource == NULL) {
-		printf("malloc err\n"); 
-		exit(1); 
-	}
-	
-	rewind(istream); 
-	for (i = 0; (c = fgetc(istream)) != EOF; ++i) {
-		shaderSource[i] = c; 
-	} 
-	
-	shaderSource[i] = '\0'; 
-	
-	fclose(istream); 
-	return shaderSource;
-}
-	
-GLuint compileShader(GLuint type, const char* source) {
-	GLuint shaderObject; 
-	switch(type) {
-		case GL_VERTEX_SHADER: 
-			shaderObject = glCreateShader(GL_VERTEX_SHADER); 
-			break; 
-		case GL_FRAGMENT_SHADER: 
-			shaderObject = glCreateShader(GL_FRAGMENT_SHADER);
-			break; 
-	}
-	glShaderSource(shaderObject, 1, &source, 0); 
-	glCompileShader(shaderObject); 
-	free((void*)source); 
-	return shaderObject; 
-}
-
-GLuint createShaderProgram(const char* vertexShaderSource, 
-						   const char* fragmentShaderSource) { 	
-	
-	GLuint programObject = glCreateProgram(); 
-	GLuint vertexShader = compileShader(GL_VERTEX_SHADER, vertexShaderSource); 
-	GLuint fragmentShader = compileShader(GL_FRAGMENT_SHADER, fragmentShaderSource); 
-
-	glAttachShader(programObject, vertexShader); 
-	glAttachShader(programObject, fragmentShader); 
-	glLinkProgram(programObject); 
-
-	glValidateProgram(programObject); 
-	return programObject; 
-	
-}
-
-int main(int argc, char** argv) {
+void init() { 
 	/* Initialize program */ 
 	if (SDL_Init(SDL_INIT_VIDEO) < 0) {
 		printf("Init err\n"); 
@@ -118,18 +53,51 @@ int main(int argc, char** argv) {
 		printf("glad err\n"); 
 		exit(1); 
 	}
-	
+}
+
+void vertexSpec() {
 	/* Vertex specification */ 
-	const GLfloat vertexPositions[VERTEXPOSSIZE] = {
-		-0.8f, -0.8f, 0.0f, 
-		 0.8f, -0.8f, 0.0f, 
-		 0.0f,  0.8f, 0.0f
+	const GLfloat vertexPositions[] = {
+		-0.8f, -0.8f,  0.0f, 
+		 0.0f, -0.8f,  0.0f, 
+		-0.4f,  0.0f,  0.0f,
+			
+		 0.0f, -0.8f,  0.0f, 
+		 0.8f, -0.8f,  0.0f, 
+		 0.4f,  0.0f,  0.0f,
+			
+		-0.4f,  0.0f,  0.0f, 
+		 0.4f,  0.0f,  0.0f, 
+		 0.0f, -0.8f,  0.0f, 
+		 
+		-0.4f,  0.0f,  0.0f, 
+		 0.4f,  0.0f,  0.0f, 
+		 0.0f,  0.8f,  0.0f, 
 	};
-	const GLfloat vertexColors[VERTEXPOSSIZE] = {
+	
+	const GLfloat vertexColors[] = {
+		 0.0f, 1.0f, 0.0f, 
+		 0.0f, 0.0f, 1.0f, 
+		 1.0f, 0.0f, 0.0f, 
+		 
+		 0.0f, 0.0f, 1.0f, 
 		 1.0f, 0.0f, 0.0f, 
 		 0.0f, 1.0f, 0.0f, 
-		 0.0f, 0.0f, 1.0f
+		 
+		 1.0f, 0.0f, 0.0f, 
+		 0.0f, 1.0f, 0.0f, 
+		 0.0f, 0.0f, 1.0f, 
+		 
+		 1.0f, 0.0f, 0.0f, 
+		 0.0f, 1.0f, 0.0f, 
+		 0.0f, 0.0f, 1.0f, 
 	};
+	vertexNumber = sizeof(vertexPositions) / sizeof(GLfloat); 
+	if (sizeof(vertexColors) / sizeof(GLfloat) != vertexNumber) {
+		printf("Color or vertex specifications are missing\n");
+		exit(1); 
+	}  
+	vertexNumber /= VERTEXATTRSIZE; 
 	
 	/* Generate VAO */ 
 	glGenVertexArrays(1, &glVertexArrayObject);
@@ -145,7 +113,7 @@ int main(int argc, char** argv) {
 	glBindBuffer(GL_ARRAY_BUFFER, glVBOVertex.name); 
 	
 	/* Fill vertex VBO with data */ 	
-	glBufferData(GL_ARRAY_BUFFER, VERTEXC * sizeof(GLfloat), vertexPositions, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, vertexNumber * VERTEXATTRSIZE * sizeof(GLfloat), vertexPositions, GL_STATIC_DRAW);
 
 	/* Set attributes for vertex VBO */ 
 	glEnableVertexAttribArray(glVBOVertex.idx); 
@@ -156,21 +124,32 @@ int main(int argc, char** argv) {
 	glBindBuffer(GL_ARRAY_BUFFER, glVBOColor.name); 
 
 	/* Fill color VBO with data */
-	glBufferData(GL_ARRAY_BUFFER, VERTEXC * sizeof(GLfloat), vertexColors, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, vertexNumber * VERTEXATTRSIZE * sizeof(GLfloat), vertexColors, GL_STATIC_DRAW);
 	
 	/* Set attributes for color VBO */ 
 	glEnableVertexAttribArray(glVBOColor.idx); 
-	glVertexAttribPointer(glVBOColor.idx, VERTEXATTRSIZE, GL_FLOAT, GL_FALSE, VERTEXATTRSTRIDE, (GLvoid*)0); 
+	glVertexAttribPointer(glVBOColor.idx, COLORATTRSIZE, GL_FLOAT, GL_FALSE, VERTEXATTRSTRIDE, (GLvoid*)0); 
 	
 	
 	/* Unbind selected VAO */
 	/* glBindVertexArray(GL_ZERO);  */
 	/* glDisableVertexAttribArray(glVBOVertex.idx);  */
 	
+}
+
+void shadersSpec() { 
 	/* Load shaders */ 
 	glPipeLineShaderProgram = createShaderProgram(loadShader("shaders/vert.glsl"), 
 												  loadShader("shaders/frag.glsl"));
 	glUseProgram(glPipeLineShaderProgram); 
+}
+
+void preRender() {
+	/* Get info */ 
+	printf("Vendor: %s\n", glGetString(GL_VENDOR)); 
+	printf("Renderer: %s\n", glGetString(GL_RENDERER)); 
+	printf("Version: %s\n", glGetString(GL_VERSION));
+	printf("Shading language: %s\n", glGetString(GL_SHADING_LANGUAGE_VERSION)); 
 	
 	/* Prepare draw */ 
 	glDisable(GL_DEPTH_TEST); 
@@ -178,12 +157,28 @@ int main(int argc, char** argv) {
 	glViewport(0,0, gWidth, gHeight); 
 	glClearColor(0.0f, 0.0f, 0.0f, 1.f); 
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT); 
+
+}
+
+void quit() {
+	/* Exit program */ 
+	glBindVertexArray(GL_ZERO); 
+	glDisableVertexAttribArray(glVBOVertex.idx); 
+	glDisableVertexAttribArray(glVBOVertex.idx); 
+
+	SDL_DestroyWindow(glWindow); 
+	SDL_Quit(); 
+}
+
+int main(int argc, char** argv) {
 	
-	/* Get info */ 
-	printf("Vendor: %s\n", glGetString(GL_VENDOR)); 
-	printf("Renderer: %s\n", glGetString(GL_RENDERER)); 
-	printf("Version: %s\n", glGetString(GL_VERSION));
-	printf("Shading language: %s\n", glGetString(GL_SHADING_LANGUAGE_VERSION)); 
+	init(); 
+	
+	vertexSpec(); 
+	
+	shadersSpec(); 
+	
+	preRender(); 
 	
 	/* Main loop */ 
 	int quit = 0; 
@@ -196,18 +191,9 @@ int main(int argc, char** argv) {
 			} 
 		}
 		/* Draw */ 
-		glDrawArrays(GL_TRIANGLES, 0, 3); 
+		glDrawArrays(GL_TRIANGLES, glVBOVertex.idx, vertexNumber); 
 		
 		SDL_GL_SwapWindow(glWindow); 
 	}
-	
-	/* Exit program */ 
-	glBindVertexArray(GL_ZERO); 
-	glDisableVertexAttribArray(glVBOVertex.idx); 
-	glDisableVertexAttribArray(glVBOVertex.idx); 
-
-	SDL_DestroyWindow(glWindow); 
-	SDL_Quit(); 
-
 	return 0; 
 }

@@ -1,4 +1,4 @@
 main: 
-	gcc main.c src/glad.c -I include/ -lSDL2
+	gcc -Wall -I include/ -o engine src/main.c src/glad.c src/shader.c -lSDL2 
 clean: 
-	rm a.out
+	rm engine

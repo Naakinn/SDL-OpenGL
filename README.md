@@ -5,5 +5,5 @@ $ make
 ```
 ### Run 
 ```
-$ ./a.out
+$ ./engine
 ```
