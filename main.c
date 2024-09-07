@@ -5,6 +5,7 @@
 #define VERTEXC 9 
 #define VERTEXATTRSIZE 3
 #define COLORATTRSIZE 3
+#define VERTEXATTRSTRIDE GL_ZERO 
 
 
 int gWidth = 800; 
@@ -134,28 +135,35 @@ int main(int argc, char** argv) {
 	glGenVertexArrays(1, &glVertexArrayObject);
 	/* Select VAO */
 	glBindVertexArray(glVertexArrayObject); 
-
-	/* Generate vertex VBO */ 
+	
+	/* Generate VBOs*/ 
 	glGenBuffers(1, &glVBOVertex.name); 
+	glGenBuffers(1, &glVBOColor.name); 
+	
+	
 	/* Select vertex VBO */
 	glBindBuffer(GL_ARRAY_BUFFER, glVBOVertex.name); 
+	
 	/* Fill vertex VBO with data */ 	
 	glBufferData(GL_ARRAY_BUFFER, VERTEXC * sizeof(GLfloat), vertexPositions, GL_STATIC_DRAW);
 
 	/* Set attributes for vertex VBO */ 
 	glEnableVertexAttribArray(glVBOVertex.idx); 
-	glVertexAttribPointer(glVBOVertex.idx, VERTEXATTRSIZE, GL_FLOAT, GL_FALSE, 0, (GLvoid*)0); 
+	glVertexAttribPointer(glVBOVertex.idx, VERTEXATTRSIZE, GL_FLOAT, GL_FALSE, VERTEXATTRSTRIDE, (GLvoid*)0); 
+
 	
-	/* Generate color VBO */
-	/* glGenBuffers(1, &glVertexBufferObjectColor);  */
-	/* glBindBuffer(GL_ARRAY_BUFFER, glVertexBufferObjectColor);  */
-	/* glBufferData(GL_ARRAY_BUFFER, VERTEXC * sizeof(GLfloat), vertexColors, GL_STATIC_DRAW); */
+	/* Select color VBO */
+	glBindBuffer(GL_ARRAY_BUFFER, glVBOColor.name); 
+
+	/* Fill color VBO with data */
+	glBufferData(GL_ARRAY_BUFFER, VERTEXC * sizeof(GLfloat), vertexColors, GL_STATIC_DRAW);
 	
-	/* Set attributes */ 
-	/* glEnableVertexAttribArray(1);  */
-	/* glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);  */
+	/* Set attributes for color VBO */ 
+	glEnableVertexAttribArray(glVBOColor.idx); 
+	glVertexAttribPointer(glVBOColor.idx, VERTEXATTRSIZE, GL_FLOAT, GL_FALSE, VERTEXATTRSTRIDE, (GLvoid*)0); 
 	
-	/* Unbind selected vertex VBO */
+	
+	/* Unbind selected VAO */
 	/* glBindVertexArray(GL_ZERO);  */
 	/* glDisableVertexAttribArray(glVBOVertex.idx);  */
 	
@@ -196,7 +204,7 @@ int main(int argc, char** argv) {
 	/* Exit program */ 
 	glBindVertexArray(GL_ZERO); 
 	glDisableVertexAttribArray(glVBOVertex.idx); 
-	/* glDisableVertexAttribArray(1);  */
+	glDisableVertexAttribArray(glVBOVertex.idx); 
 
 	SDL_DestroyWindow(glWindow); 
 	SDL_Quit(); 
