@@ -21,7 +21,7 @@ GLuint glPipeLineShaderProgram = 0;
 /* VBOs */ 
 struct VBO {
 	GLuint name; /* VBO name */
-	GLuint idx; /* Index in VertexAttribArray */
+	GLuint idx; /* Index of the generic vertex attribute array */
 }   glVBOVertex = { 0, 0 },
 	glVBOColor = { 0, 1 };
 
@@ -160,7 +160,7 @@ void preRender() {
 
 }
 
-void quit() {
+void quitSDL() {
 	/* Exit program */ 
 	glBindVertexArray(GL_ZERO); 
 	glDisableVertexAttribArray(glVBOVertex.idx); 
@@ -195,5 +195,6 @@ int main(int argc, char** argv) {
 		
 		SDL_GL_SwapWindow(glWindow); 
 	}
+	quitSDL(); 
 	return 0; 
 }
