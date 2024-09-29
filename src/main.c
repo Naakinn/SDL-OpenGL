@@ -9,6 +9,7 @@
 int gWidth = 800; 
 int gHeight = 600; 
 GLuint vertexNumber; 
+GLuint elementNumber; 
 SDL_Window* glWindow = NULL; 
 SDL_GLContext* glContext = NULL; 
 
@@ -21,6 +22,9 @@ struct VBOVertex {
 	GLuint vertIdx; /* Index of the generic vertex attribute for vertices */
 	GLuint colIdx; /* Index of the generic vertex attribute for color */
 }   glVBOVertex = { 0, 0, 1 };
+
+/* EBO */
+GLuint glElementBufferObject = 0; 
 
 /* Grapshics pipeline shader program */ 
 GLuint glPipeLineProgram = 0; 
@@ -58,34 +62,32 @@ void init() {
 void vertexSpec() {
 	/* Vertex specification */ 
 	const GLfloat vertexData[] = {
+		 /* 1 */
 		-0.5f, -0.5f,  0.0f, /* Vertex position */
-		 0.0f,  1.0f,  0.0f, /* Color */
-		
+		 1.0f,  0.0f,  0.0f, /* Color */
+		 /* 2 */
 		 0.5f, -0.5f,  0.0f, 
-		 0.0f,  0.0f,  1.0f, 
-		 
-		-0.5f,  0.5f,  0.0f,
-	   	 1.0f,  0.0f,  0.0f, 
-		 
-		 0.5f, -0.5f,  0.0f,
-		 1.0f,  0.0f,  0.0f, 
-		 
-		 0.5f,  0.5f,  0.0f, 
 		 0.0f,  1.0f,  0.0f, 
-		 
-		 -0.5f,  0.5f,  0.0f, 
-		 0.0f,  0.0f,  1.0f, 
-		 
-			
+		 /* 3 */
+		-0.5f,  0.5f,  0.0f,
+	     0.0f,  0.0f,  1.0f, 
+		 /* 4 */
+		 0.5f,  0.5f,  0.0f, 
+		 1.0f,  0.0f,  0.0f, 
 	};
+	const GLuint elementData[] = { 2, 0, 1, 3, 2, 1 }; 
 	
 	vertexNumber = sizeof(vertexData) / sizeof(GLfloat) / VERTEXSIZE; 
+	elementNumber = sizeof(elementData) / sizeof(GLuint); 
+	
+	/* elementNumber = sizeof(elementData) / sizeof(GLuint);  */
 	printf("Number of vertices: %u\n", vertexNumber); 
 	
 	/* Generate VAO */ 
 	glGenVertexArrays(1, &glVertexArrayObject);
 	/* Select VAO */
 	glBindVertexArray(glVertexArrayObject); 
+	
 	
 	/* Generate VBO */ 
 	glGenBuffers(1, &glVBOVertex.name); 
@@ -95,6 +97,15 @@ void vertexSpec() {
 	/* Fill vertex VBO with data */ 	
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertexData), vertexData, GL_STATIC_DRAW);
 
+	
+	/* EBO */ 
+	glGenBuffers(1, &glElementBufferObject);
+	/* Select EBO */
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, glElementBufferObject); 
+	/* Fill EBO with data */ 
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(elementData), elementData, GL_STATIC_DRAW);
+		
+	
 	/* Set vertex attributes in VBO */ 
 	glEnableVertexAttribArray(glVBOVertex.vertIdx); 
 	glVertexAttribPointer(glVBOVertex.vertIdx, POSSIZE, GL_FLOAT, GL_FALSE, VERTEXSIZE * sizeof(GLfloat), (GLvoid*)0); 
@@ -123,8 +134,7 @@ void getInfo() {
 	printf("Shading language: %s\n", glGetString(GL_SHADING_LANGUAGE_VERSION)); 
 }
 
-void preRender() {
-	
+void prepDraw() {
 	
 	/* Prepare draw */ 
 	glDisable(GL_DEPTH_TEST); 
@@ -136,7 +146,7 @@ void preRender() {
 	getInfo();
 }
 
-void render() {
+void draw() {
 	/* Main loop */ 
 	int quit = 0; 
 	while (!quit) {
@@ -149,7 +159,8 @@ void render() {
 			} 
 		}
 		/* Draw */ 
-		glDrawArrays(GL_TRIANGLES, glVBOVertex.vertIdx, vertexNumber); 
+		/* glDrawArrays(GL_TRIANGLES, glVBOVertex.vertIdx, vertexNumber);  */
+		glDrawElements(GL_TRIANGLES, elementNumber, GL_UNSIGNED_INT, 0); 
 		
 		SDL_GL_SwapWindow(glWindow); 
 	}
@@ -172,9 +183,9 @@ int main(int argc, char** argv) {
 	
 	shadersSpec(); 
 	
-	preRender(); 
+	prepDraw(); 
 	
-	render(); 
+	draw(); 
 	
 	quitSDL(); 
 	
