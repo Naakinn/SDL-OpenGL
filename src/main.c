@@ -15,15 +15,15 @@ SDL_GLContext* glContext = NULL;
 /* VAO */ 
 GLuint glVertexArrayObject = 0; 
 
-/* Grapshics pipeline shader program */ 
-GLuint glPipeLineProgram = 0; 
-
 /* VBOs */ 
 struct VBOVertex {
 	GLuint name; /* VBO name */
 	GLuint vertIdx; /* Index of the generic vertex attribute for vertices */
 	GLuint colIdx; /* Index of the generic vertex attribute for color */
 }   glVBOVertex = { 0, 0, 1 };
+
+/* Grapshics pipeline shader program */ 
+GLuint glPipeLineProgram = 0; 
 
 void init() { 
 	/* Initialize program */ 
@@ -58,41 +58,25 @@ void init() {
 void vertexSpec() {
 	/* Vertex specification */ 
 	const GLfloat vertexData[] = {
-		-0.8f, -0.8f,  0.0f, /* Vertex position */
+		-0.5f, -0.5f,  0.0f, /* Vertex position */
 		 0.0f,  1.0f,  0.0f, /* Color */
 		
-		 0.0f, -0.8f,  0.0f, 
+		 0.5f, -0.5f,  0.0f, 
 		 0.0f,  0.0f,  1.0f, 
 		 
-		-0.4f,  0.0f,  0.0f,
+		-0.5f,  0.5f,  0.0f,
 	   	 1.0f,  0.0f,  0.0f, 
+		 
+		 0.5f, -0.5f,  0.0f,
+		 1.0f,  0.0f,  0.0f, 
+		 
+		 0.5f,  0.5f,  0.0f, 
+		 0.0f,  1.0f,  0.0f, 
+		 
+		 -0.5f,  0.5f,  0.0f, 
+		 0.0f,  0.0f,  1.0f, 
+		 
 			
-		 0.0f, -0.8f,  0.0f, 
-		 0.0f,  0.0f,  1.0f, 
-		 
-		 0.8f, -0.8f,  0.0f, 
-		 1.0f,  0.0f,  0.0f, 
-		 
-		 0.4f,  0.0f,  0.0f,
-		 0.0f,  1.0f,  0.0f, 
-			
-		-0.4f,  0.0f,  0.0f, 
-		 1.0f,  0.0f,  0.0f, 
-		
-		 0.4f,  0.0f,  0.0f, 
-		 0.0f,  1.0f,  0.0f, 
-		 
-		 0.0f, -0.8f,  0.0f, 
-		 0.0f,  0.0f,  1.0f, 
-		 
-		-0.4f,  0.0f,  0.0f, 
-		 1.0f,  0.0f,  0.0f, 
-		
-		 0.4f,  0.0f,  0.0f, 
-		 0.0f,  1.0f,  0.0f, 
-
-		 0.0f,  0.8f,  0.0f, 
-		 0.0f,  0.0f,  1.0f, 
 	};
 	
 	vertexNumber = sizeof(vertexData) / sizeof(GLfloat) / VERTEXSIZE; 
@@ -152,6 +136,25 @@ void preRender() {
 	getInfo();
 }
 
+void render() {
+	/* Main loop */ 
+	int quit = 0; 
+	while (!quit) {
+		
+		/* Listen input */
+		SDL_Event ev; 
+		while (SDL_PollEvent(&ev) != 0) {
+			if (ev.type == SDL_QUIT) {
+				quit = 1; 
+			} 
+		}
+		/* Draw */ 
+		glDrawArrays(GL_TRIANGLES, glVBOVertex.vertIdx, vertexNumber); 
+		
+		SDL_GL_SwapWindow(glWindow); 
+	}
+}
+
 void quitSDL() {
 	/* Exit program */ 
 	glBindVertexArray(GL_ZERO); 
@@ -171,21 +174,9 @@ int main(int argc, char** argv) {
 	
 	preRender(); 
 	
-	/* Main loop */ 
-	int quit = 0; 
-	while (!quit) {
-		/* Listen input */
-		SDL_Event ev; 
-		while (SDL_PollEvent(&ev) != 0) {
-			if (ev.type == SDL_QUIT) {
-				quit = 1; 
-			} 
-		}
-		/* Draw */ 
-		glDrawArrays(GL_TRIANGLES, glVBOVertex.vertIdx, vertexNumber); 
-		
-		SDL_GL_SwapWindow(glWindow); 
-	}
+	render(); 
+	
 	quitSDL(); 
+	
 	return 0; 
 }
