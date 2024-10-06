@@ -6,10 +6,10 @@ set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR})
 set(EXECUTABLE_NAME engine)
 
 set(SRC 
-	${PROJECT_SOURCE_DIR}/src/main.c 
-	${PROJECT_SOURCE_DIR}/src/err.c
+	${PROJECT_SOURCE_DIR}/src/main.cpp
+	${PROJECT_SOURCE_DIR}/src/err.cpp
 	${PROJECT_SOURCE_DIR}/src/glad.c
-	${PROJECT_SOURCE_DIR}/src/shader.c
+	${PROJECT_SOURCE_DIR}/src/shader.cpp
 	)
 
 add_link_options(-fuse-ld=mold -lSDL2)

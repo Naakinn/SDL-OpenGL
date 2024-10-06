@@ -49,7 +49,7 @@ void init() {
 		printf("glWindow err\n"); 
 		exit(1); 
 	}
-	glContext = SDL_GL_CreateContext(glWindow); 
+	glContext = (SDL_GLContext*)SDL_GL_CreateContext(glWindow); 
 	if (glContext == NULL) {
 		printf("glContext err\n"); 
 		exit(1); 
