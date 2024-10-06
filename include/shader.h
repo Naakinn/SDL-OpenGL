@@ -1,5 +1,7 @@
 #ifndef SHADER_H 
 #define SHADER_H 
+
+#define INCLUDE_GLAD 
 #include "glad/glad.h"
 
 char* loadShader(const char* filepath); 

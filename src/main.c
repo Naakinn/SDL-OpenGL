@@ -1,5 +1,7 @@
 #include <SDL2/SDL.h>
 #include "shader.h"
+#include "err.h"
+
 
 #define VERTEXSIZE 6
 #define POSSIZE 3
@@ -57,6 +59,9 @@ void init() {
 		printf("glad err\n"); 
 		exit(1); 
 	}
+	glEnable              ( GL_DEBUG_OUTPUT );
+	glDebugMessageCallback( messageCallback, 0 );
+	
 }
 
 void vertexSpec() {
@@ -158,8 +163,7 @@ void draw() {
 				quit = 1; 
 			} 
 		}
-		/* Draw */ 
-		/* glDrawArrays(GL_TRIANGLES, glVBOVertex.vertIdx, vertexNumber);  */
+		/* Draw call */ 
 		glDrawElements(GL_TRIANGLES, elementNumber, GL_UNSIGNED_INT, 0); 
 		
 		SDL_GL_SwapWindow(glWindow); 
