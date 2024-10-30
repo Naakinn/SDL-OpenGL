@@ -1,10 +1,9 @@
-
-#define DEBUG
-
 #include <SDL2/SDL.h>
 #include "shader.h"
-#include "err.h"
 
+#ifdef DEBUG 
+#include "err.h"
+#endif
 
 #define VERTEXSIZE 6
 #define POSSIZE 3
@@ -63,6 +62,7 @@ void init() {
 		exit(1); 
 	}
 #ifdef DEBUG
+	printf("Build in debug mode\n");
 	glEnable              ( GL_DEBUG_OUTPUT );
 	glDebugMessageCallback( messageCallback, 0 );
 #endif
