@@ -1,3 +1,6 @@
+
+#define DEBUG
+
 #include <SDL2/SDL.h>
 #include "shader.h"
 #include "err.h"
@@ -59,8 +62,10 @@ void init() {
 		printf("glad err\n"); 
 		exit(1); 
 	}
+#ifdef DEBUG
 	glEnable              ( GL_DEBUG_OUTPUT );
 	glDebugMessageCallback( messageCallback, 0 );
+#endif
 	
 }
 

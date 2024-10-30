@@ -4,15 +4,16 @@ project(3DEngine)
 
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR})
 set(EXECUTABLE_NAME engine)
+set(LINKER mold)
 
 set(SRC 
 	${PROJECT_SOURCE_DIR}/src/main.cpp
-	${PROJECT_SOURCE_DIR}/src/err.cpp
+	${PROJECT_SOURCE_DIR}/src/err.c
 	${PROJECT_SOURCE_DIR}/src/glad.c
-	${PROJECT_SOURCE_DIR}/src/shader.cpp
+	${PROJECT_SOURCE_DIR}/src/shader.c
 	)
 
-add_link_options(-fuse-ld=mold -lSDL2)
+add_link_options(-fuse-ld=${LINKER} -lSDL2)
 
 add_executable(${EXECUTABLE_NAME} ${SRC})
 
