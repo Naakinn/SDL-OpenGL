@@ -7,7 +7,7 @@ set(EXECUTABLE_NAME engine)
 set(LINKER mold)
 
 option(USE_LINKER_MOLD "Use mold linker instead of standard gnu ld" ON)
-option(DEBUG "Build in debug output mode" ON)
+option(DEBUG "Build in debug output mode" OFF)
 
 set(SRC 
 	${PROJECT_SOURCE_DIR}/src/main.cpp
