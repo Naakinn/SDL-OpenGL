@@ -60,9 +60,13 @@ GLuint createShaderProgram(const char* vertexShaderSource,
 	glAttachShader(programObject, vertexShader); 
 	glAttachShader(programObject, fragmentShader); 
 	glLinkProgram(programObject); 
-
-	glValidateProgram(programObject); 
-	return programObject; 
 	
+	glValidateProgram(programObject); 
+
+	/* Clean up */
+	glDeleteShader(vertexShader);
+	glDeleteShader(fragmentShader);
+	
+	return programObject; 
 }
 

@@ -62,7 +62,7 @@ void init() {
 		exit(1); 
 	}
 #ifdef DEBUG
-	printf("Build in debug mode\n");
+	printf("[INFO] Running in debug mode\n");
 	glEnable              ( GL_DEBUG_OUTPUT );
 	glDebugMessageCallback( messageCallback, 0 );
 #endif
@@ -133,7 +133,7 @@ void vertexSpec() {
 void shadersSpec() { 
 	/* Load shaders */ 
 	glPipeLineProgram = createShaderProgram(loadShader("shaders/vert.glsl"), 
-												  loadShader("shaders/frag.glsl"));
+                                            loadShader("shaders/frag.glsl"));
 	glUseProgram(glPipeLineProgram); 
 }
 
@@ -175,11 +175,12 @@ void draw() {
 	}
 }
 
-void quitSDL() {
-	/* Exit program */ 
-	glBindVertexArray(GL_ZERO); 
-	glDisableVertexAttribArray(glVBOVertex.vertIdx); 
-
+void quit() {
+	glDeleteBuffers(1, &glVBOVertex.name);
+	glDeleteBuffers(1, &glElementBufferObject);
+	glDeleteVertexArrays(1, &glVertexArrayObject);
+	
+	SDL_GL_DeleteContext(glContext);
 	SDL_DestroyWindow(glWindow); 
 	SDL_Quit(); 
 }
@@ -196,7 +197,7 @@ int main(int argc, char** argv) {
 	
 	draw(); 
 	
-	quitSDL(); 
+	quit(); 
 	
 	return 0; 
 }
