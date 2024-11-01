@@ -7,11 +7,13 @@ set(EXECUTABLE_NAME engine)
 set(LINKER mold)
 
 option(USE_LINKER_MOLD "Use mold linker instead of standard gnu ld" ON)
-option(DEBUG "Build in debug output mode" OFF)
+option(DEBUG "Build in debug output mode" ON)
+
+find_package(glm CONFIG REQUIRED)
 
 set(SRC 
 	${PROJECT_SOURCE_DIR}/src/main.cpp
-	${PROJECT_SOURCE_DIR}/src/err.c
+	${PROJECT_SOURCE_DIR}/src/error.c
 	${PROJECT_SOURCE_DIR}/src/glad.c
 	${PROJECT_SOURCE_DIR}/src/shader.c
 	)
@@ -33,4 +35,4 @@ target_include_directories(${EXECUTABLE_NAME} PUBLIC
 	${PROJECT_SOURCE_DIR}/include 
 	/usr/local/include/SDL2/
 )
-
+target_link_libraries(${EXECUTABLE_NAME} PRIVATE glm::glm)

@@ -1,4 +1,4 @@
-#include "err.h"
+#include "error.h"
 #include <stdio.h>
 
 void glGetErrorStatus(const char* function, unsigned int line) {

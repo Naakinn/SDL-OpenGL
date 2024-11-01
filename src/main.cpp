@@ -2,7 +2,7 @@
 #include "shader.h"
 
 #ifdef DEBUG 
-#include "err.h"
+#include "error.h"
 #endif
 
 #define VERTEXSIZE 6
@@ -91,7 +91,7 @@ void vertexSpec() {
 	elementNumber = sizeof(elementData) / sizeof(GLuint); 
 	
 	/* elementNumber = sizeof(elementData) / sizeof(GLuint);  */
-	printf("Number of vertices: %u\n", vertexNumber); 
+	printf("[INFO] Number of vertices: %u\n", vertexNumber); 
 	
 	/* Generate VAO */ 
 	glGenVertexArrays(1, &glVertexArrayObject);
@@ -138,10 +138,10 @@ void shadersSpec() {
 }
 
 void getInfo() {
-	printf("Vendor: %s\n", glGetString(GL_VENDOR)); 
-	printf("Renderer: %s\n", glGetString(GL_RENDERER)); 
-	printf("Version: %s\n", glGetString(GL_VERSION));
-	printf("Shading language: %s\n", glGetString(GL_SHADING_LANGUAGE_VERSION)); 
+	printf("[INFO] Vendor: %s\n", glGetString(GL_VENDOR)); 
+	printf("[INFO] Renderer: %s\n", glGetString(GL_RENDERER)); 
+	printf("[INFO] Version: %s\n", glGetString(GL_VERSION));
+	printf("[INFO] Shading language: %s\n", glGetString(GL_SHADING_LANGUAGE_VERSION)); 
 }
 
 void prepDraw() {
