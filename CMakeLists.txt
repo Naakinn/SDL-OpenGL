@@ -10,6 +10,7 @@ option(USE_LINKER_MOLD "Use mold linker instead of standard gnu ld" ON)
 option(DEBUG "Build in debug output mode" ON)
 
 find_package(glm CONFIG REQUIRED)
+find_package(SDL2 REQUIRED)
 
 set(SRC 
 	${PROJECT_SOURCE_DIR}/src/main.cpp
@@ -19,9 +20,7 @@ set(SRC
 	)
 
 if(USE_LINKER_MOLD) 
-	add_link_options(-fuse-ld=mold -lSDL2)
-else()
-	add_link_options(-lSDL2)
+	add_link_options(-fuse-ld=mold)
 endif()
 
 
@@ -36,3 +35,4 @@ target_include_directories(${EXECUTABLE_NAME} PUBLIC
 	/usr/local/include/SDL2/
 )
 target_link_libraries(${EXECUTABLE_NAME} PRIVATE glm::glm)
+target_link_libraries(${EXECUTABLE_NAME} PRIVATE SDL2)
