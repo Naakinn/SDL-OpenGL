@@ -3,6 +3,7 @@
 #include <glm/glm.hpp>
 #include <glm/vec3.hpp>
 #include <glm/mat4x4.hpp> 
+#include <glm/gtc/matrix_transform.hpp>
 
 #include "shader.h"
 
@@ -15,8 +16,9 @@
 #define COLORSIZE 3
 
 
-int gWidth = 800; 
-int gHeight = 600; 
+static int gWidth = 800; 
+static int gHeight = 600; 
+static int do_quit = 0; 
 
 GLuint vertexNumber; 
 GLuint elementNumber; 
@@ -40,8 +42,10 @@ GLuint glElementBufferObject = 0;
 /* Grapshics pipeline shader program */ 
 GLuint glPipeLineProgram = 0; 
 
-float glUOffset = 0.0f; 
-GLint glUOffsetLocation = 0; 
+float glOffset = 0.0f; /* TODO: template variable */
+
+float glUModelMatrix = 0.0f; 
+GLint glUModelMatrixLocation = 0; 
 
 void init() { 
 	/* Initialize program */ 
@@ -161,45 +165,47 @@ void preDraw() {
 	glViewport(0,0, gWidth, gHeight); 
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT); 
 	
-	
-	glUOffsetLocation = glGetUniformLocation(glPipeLineProgram, "uOffset"); 
-	if (glUOffsetLocation >= 0) {
-		printf("[INFO] Uniform `%s` location: %d\n", "uOffset", glUOffsetLocation); 
+	glUModelMatrixLocation = glGetUniformLocation(glPipeLineProgram, "uModelMatrix"); 
+	if (glUModelMatrixLocation >= 0) {
+		printf("[INFO] Uniform `%s` location: %d\n", "uModelMatrix", glUModelMatrixLocation); 
 	}
 	else {
-		printf("[ERROR] Couldn't find uniform `%s`, location %d", "uOffset", glUOffsetLocation);
+		printf("[ERROR] Couldn't find uniform `%s`, location: %d\n", "uModelMatrix", glUModelMatrixLocation);
+		do_quit = 1; 
 	}
+	
 
-	getInfo();
 }
 
-void updateState() {
-	glUniform1f(glUOffsetLocation, glUOffset);
+void updateUniform() {
+	if (glUModelMatrixLocation >= 0) {
+		glm::mat4 translate = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, glOffset, 0.0f));
+		glUniformMatrix4fv(glUModelMatrixLocation, 1, GL_FALSE, &translate[0][0]);
+	}
 }
 
 void draw() {
 	/* Main loop */ 
-	int quit = 0; 
-	while (!quit) {
+	while (!do_quit) {
 		
 		/* Listen input */
 		SDL_Event ev; 
 		while (SDL_PollEvent(&ev) != 0) {
 			if (ev.type == SDL_QUIT) {
-				quit = 1; 
+				do_quit = 1; 
 			} 
 		}
 		
 		const Uint8* state = SDL_GetKeyboardState(NULL); 
-		if (state[SDL_SCANCODE_UP]) {
-			glUOffset+= 0.01f; 	
+		if (state[SDL_SCANCODE_K]) {
+			glOffset += 0.01f;
 		}
-		if (state[SDL_SCANCODE_DOWN]) {
-			glUOffset-= 0.01f; 	
+		if (state[SDL_SCANCODE_J]) {
+			glOffset -= 0.01f;
 		}
 		
 		/* Update uniforms */ 
-		updateState(); 
+		updateUniform(); 
 		
 		/* Draw */ 
 		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT); 
@@ -220,9 +226,11 @@ void quit() {
 	SDL_Quit(); 
 }
 
-int main(int argc, char** argv) {
+int main() {
 	
 	init(); 
+	
+	getInfo();
 	
 	vertexSpec(); 
 	

@@ -10,7 +10,7 @@ option(USE_LINKER_MOLD "Use mold linker instead of standard gnu ld" ON)
 option(DEBUG "Build in debug output mode" ON)
 
 find_package(glm CONFIG REQUIRED)
-find_package(SDL2 REQUIRED)
+find_package(SDL2 CONFIG REQUIRED)
 
 set(SRC 
 	${PROJECT_SOURCE_DIR}/src/main.cpp
@@ -29,6 +29,8 @@ add_executable(${EXECUTABLE_NAME} ${SRC})
 if(DEBUG) 
 	target_compile_definitions(${EXECUTABLE_NAME} PRIVATE "DEBUG")
 endif()
+
+target_compile_options(${EXECUTABLE_NAME} PRIVATE -Wall)
 
 target_include_directories(${EXECUTABLE_NAME} PUBLIC 
 	${PROJECT_SOURCE_DIR}/include 

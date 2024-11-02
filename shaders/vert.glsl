@@ -5,11 +5,14 @@ layout(location = 1) in vec3 vertexColors;
 
 out vec3 v_vertexColors; 
 
-uniform float uOffset; 
+uniform mat4 uModelMatrix; 
 
 void main()
 {
 	v_vertexColors = vertexColors; 
-	gl_Position = vec4(position.x, position.y + uOffset, position.z, 1.0f);
+
+	vec4 traslatedPosition = uModelMatrix * vec4(position, 1.0f); 
+	
+	gl_Position = vec4(traslatedPosition.x, traslatedPosition.y, traslatedPosition.z, 1.0f);
 }
 
