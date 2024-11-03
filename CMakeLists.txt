@@ -28,6 +28,7 @@ add_executable(${EXECUTABLE_NAME} ${SRC})
 
 if(DEBUG) 
 	target_compile_definitions(${EXECUTABLE_NAME} PRIVATE "DEBUG")
+	target_compile_options(${EXECUTABLE_NAME} PRIVATE -g)
 endif()
 
 target_compile_options(${EXECUTABLE_NAME} PRIVATE -Wall)
