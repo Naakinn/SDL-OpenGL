@@ -5,6 +5,7 @@
 #include <glm/mat4x4.hpp>
 #include <glm/vec3.hpp>
 
+#include "render.hpp"
 #include "shader.h"
 
 #ifdef DEBUG
@@ -25,42 +26,43 @@ GLuint elementNumber;
 SDL_Window* glWindow = NULL;
 SDL_GLContext* glContext = NULL;
 
-/* VAO */
+// VAO
 GLuint glVertexArrayObject = 0;
 
-/* VBOs */
+// VBOs
 struct VBOVertex {
-    GLuint name; /* VBO name */
-    GLuint vertIdx; /* Index of the generic vertex attribute for vertices */
-    GLuint colIdx; /* Index of the generic vertex attribute for color */
-} glVBOVertex = { 0, 0, 1 };
+    GLuint name;     // VBO name
+    GLuint vertIdx;  // Index of the generic vertex attribute for vertices
+    GLuint colIdx;   // Index of the generic vertex attribute for color
+} glVBOVertex = {0, 0, 1};
 
-/* EBO */
+// EBO
 GLuint glElementBufferObject = 0;
 
-/* Grapshics pipeline shader program */
+// Grapshics pipeline shader program
 GLuint glPipeLineProgram = 0;
 
-float glOffset = 0.0f; /* TODO: template variable */
+struct glUniformMatrix {
+    GLint location;
+    const char* name;
+};
 
-float glUModelMatrix = 0.0f;
-GLint glUModelMatrixLocation = 0;
-
-void init()
-{
-    /* Initialize program */
+void init() {
+    // Initialize program
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
         printf("[ERROR] SDL_Init: %s\n", SDL_GetError());
         exit(1);
     }
-    /* Set attributes */
+    // Set attributes
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 6);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK,
+                        SDL_GL_CONTEXT_PROFILE_CORE);
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 
-    glWindow = SDL_CreateWindow("OpenGL", 0, 0, gWidth, gHeight, SDL_WINDOW_OPENGL);
+    glWindow =
+        SDL_CreateWindow("OpenGL", 0, 0, gWidth, gHeight, SDL_WINDOW_OPENGL);
     if (glWindow == NULL) {
         printf("[ERROR] SDL_CreateWindow: %s\n", SDL_GetError());
         exit(1);
@@ -82,111 +84,110 @@ void init()
 #endif
 }
 
-void vertexSpec()
-{
-    /* Vertex specification */ /* clang-format off */
-	const GLfloat vertexData[] = {
-		 /* 1 */
-		-0.5f, -0.5f,  0.0f, /* Vertex position */
-		 1.0f,  0.0f,  0.0f, /* Color */
-		 /* 2 */
-		 0.5f, -0.5f,  0.0f, 
-		 0.0f,  1.0f,  0.0f, 
-		 /* 3 */
-		-0.5f,  0.5f,  0.0f,
-	     0.0f,  0.0f,  1.0f, 
-		 /* 4 */
-		 0.5f,  0.5f,  0.0f, 
-		 1.0f,  0.0f,  0.0f, 
-	}; /* clang-format on */
-    const GLuint elementData[] = { 2, 0, 1, 3, 2, 1 };
+void vertexSpec() {
+    // Vertex specification
+    // clang-format off
+    const GLfloat vertexData[] = {
+         // 1
+        -0.5f, -0.5f,  0.0f,  // Vertex position
+         1.0f,  0.0f,  0.0f,  // Color
+         // 2
+         0.5f, -0.5f,  0.0f,
+         0.0f,  1.0f,  0.0f,
+         // 3
+        -0.5f,  0.5f,  0.0f,
+         0.0f,  0.0f,  1.0f,
+         // 4
+         0.5f,  0.5f,  0.0f,
+         1.0f,  0.0f,  0.0f,
+    };  // clang-format on
+    const GLuint elementData[] = {2, 0, 1, 3, 2, 1};
 
     vertexNumber = sizeof(vertexData) / sizeof(GLfloat) / VERTEXSIZE;
     elementNumber = sizeof(elementData) / sizeof(GLuint);
 
-    /* elementNumber = sizeof(elementData) / sizeof(GLuint);  */
+    // elementNumber = sizeof(elementData) / sizeof(GLuint);
     printf("[INFO] Number of vertices: %u\n", vertexNumber);
 
-    /* Generate VAO */
+    // Generate VAO
     glGenVertexArrays(1, &glVertexArrayObject);
-    /* Select VAO */
+    // Select VAO
     glBindVertexArray(glVertexArrayObject);
-
-    /* Generate VBO */
+    // Generate VBO
     glGenBuffers(1, &glVBOVertex.name);
-    /* Select vertex VBO */
+    // Select vertex VBO
     glBindBuffer(GL_ARRAY_BUFFER, glVBOVertex.name);
 
-    /* Fill vertex VBO with data */
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertexData), vertexData, GL_STATIC_DRAW);
+    // Fill vertex VBO with data
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertexData), vertexData,
+                 GL_STATIC_DRAW);
 
-    /* EBO */
+    // EBO
     glGenBuffers(1, &glElementBufferObject);
-    /* Select EBO */
+    // Select EBO
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, glElementBufferObject);
-    /* Fill EBO with data */
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(elementData), elementData, GL_STATIC_DRAW);
+    // Fill EBO with data
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(elementData), elementData,
+                 GL_STATIC_DRAW);
 
-    /* Set vertex attributes in VBO */
+    // Set vertex attributes in VBO
     glEnableVertexAttribArray(glVBOVertex.vertIdx);
-    glVertexAttribPointer(glVBOVertex.vertIdx, POSSIZE, GL_FLOAT, GL_FALSE, VERTEXSIZE * sizeof(GLfloat), (GLvoid*)0);
+    glVertexAttribPointer(glVBOVertex.vertIdx, POSSIZE, GL_FLOAT, GL_FALSE,
+                          VERTEXSIZE * sizeof(GLfloat), (GLvoid*)0);
 
-    /* Set color attributes in the same VBO */
+    // Set color attributes in the same VBO
     glEnableVertexAttribArray(glVBOVertex.colIdx);
-    glVertexAttribPointer(glVBOVertex.colIdx, COLORSIZE, GL_FLOAT, GL_FALSE, VERTEXSIZE * sizeof(GLfloat), (GLvoid*)(POSSIZE * sizeof(GLfloat)));
+    glVertexAttribPointer(glVBOVertex.colIdx, COLORSIZE, GL_FLOAT, GL_FALSE,
+                          VERTEXSIZE * sizeof(GLfloat),
+                          (GLvoid*)(POSSIZE * sizeof(GLfloat)));
 
-    /* Unbind selected VAO */
-    /* glBindVertexArray(GL_ZERO);  */
-    /* glDisableVertexAttribArray(glVBOVertex.idx);  */
+    // Unbind selected VAO
+    // glBindVertexArray(GL_ZERO);
+    // glDisableVertexAttribArray(glVBOVertex.idx);
 }
 
-void shadersSpec()
-{
-    /* Load shaders */
+void shadersSpec() {
+    // Load shaders
     glPipeLineProgram = createShaderProgram(loadShader("shaders/vert.glsl"),
-        loadShader("shaders/frag.glsl"));
+                                            loadShader("shaders/frag.glsl"));
     glUseProgram(glPipeLineProgram);
 }
 
-void getInfo()
-{
-    printf("[INFO] Vendor: %s\n", glGetString(GL_VENDOR));
-    printf("[INFO] Renderer: %s\n", glGetString(GL_RENDERER));
-    printf("[INFO] Version: %s\n", glGetString(GL_VERSION));
-    printf("[INFO] Shading language: %s\n", glGetString(GL_SHADING_LANGUAGE_VERSION));
-}
-
-void preDraw()
-{
-
+void preDraw() {
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_CULL_FACE);
     glViewport(0, 0, gWidth, gHeight);
     glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-
-    glUModelMatrixLocation = glGetUniformLocation(glPipeLineProgram, "uModelMatrix");
-    if (glUModelMatrixLocation >= 0) {
-        printf("[INFO] Uniform `%s` location: %d\n", "uModelMatrix", glUModelMatrixLocation);
-    } else {
-        printf("[ERROR] Couldn't find uniform `%s`, location: %d\n", "uModelMatrix", glUModelMatrixLocation);
-        do_quit = 1;
-    }
 }
 
-void updateUniform()
-{
-    if (glUModelMatrixLocation >= 0) {
-        glm::mat4 translate = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, glOffset, 0.0f));
-        glUniformMatrix4fv(glUModelMatrixLocation, 1, GL_FALSE, &translate[0][0]);
-    }
-}
+void draw() {
+    // Offset variables
+    float glOffset = 0.0f;
 
-void draw()
-{
-    /* Main loop */
+    // Retrieve uniforms' locations
+    struct glUniformMatrix uTranslation, uPerspective;
+    uTranslation.name = "uTranslation";
+    uPerspective.name = "uPerspective";
+    uTranslation.location =
+        glGetUniformLocation(glPipeLineProgram, uTranslation.name);
+    uPerspective.location =
+        glGetUniformLocation(glPipeLineProgram, uPerspective.name);
+
+    // Check locations
+    if (uTranslation.location < 0) {
+        printf("[ERROR] Couldn't find uniform `%s`, location: %d\n",
+               uTranslation.name, uTranslation.location);
+        quit();
+    }
+    if (uPerspective.location < 0) {
+        printf("[ERROR] Couldn't find uniform `%s`, location: %d\n",
+               uPerspective.name, uPerspective.location);
+        quit();
+    }
+
+    // Main loop
     while (!do_quit) {
-
-        /* Listen input */
+        // Listen input
         SDL_Event ev;
         while (SDL_PollEvent(&ev) != 0) {
             if (ev.type == SDL_QUIT) {
@@ -197,25 +198,35 @@ void draw()
         const Uint8* state = SDL_GetKeyboardState(NULL);
         if (state[SDL_SCANCODE_K]) {
             glOffset += 0.01f;
+            printf("%f\n", glOffset);  // LOG
         }
         if (state[SDL_SCANCODE_J]) {
             glOffset -= 0.01f;
+            printf("%f\n", glOffset);  // LOG
         }
 
-        /* Update uniforms */
-        updateUniform();
+        // Build matrices
+        glm::mat4 translate =
+            glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, glOffset));
+        glm::mat4 perspective = glm::perspective(                // How close and far we can see
+            glm::radians(45.0f), (float)gWidth / (float)gHeight, 0.1f, 10.0f);
 
-        /* Draw */
+		// Set uniforms
+        glUniformMatrix4fv(uTranslation.location, 1, GL_FALSE,
+                           &translate[0][0]);
+        glUniformMatrix4fv(uPerspective.location, 1, GL_FALSE,
+                           &perspective[0][0]);
+
+        // Draw
         glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
         glDrawElements(GL_TRIANGLES, elementNumber, GL_UNSIGNED_INT, 0);
 
-        /* Update window */
+        // Update window
         SDL_GL_SwapWindow(glWindow);
     }
 }
 
-void quit()
-{
+void quit() {
     glDeleteBuffers(1, &glVBOVertex.name);
     glDeleteBuffers(1, &glElementBufferObject);
     glDeleteVertexArrays(1, &glVertexArrayObject);
@@ -225,9 +236,15 @@ void quit()
     SDL_Quit();
 }
 
-int main()
-{
+void getInfo() {
+    printf("[INFO] Vendor: %s\n", glGetString(GL_VENDOR));
+    printf("[INFO] Renderer: %s\n", glGetString(GL_RENDERER));
+    printf("[INFO] Version: %s\n", glGetString(GL_VERSION));
+    printf("[INFO] Shading language: %s\n",
+           glGetString(GL_SHADING_LANGUAGE_VERSION));
+}
 
+int main() {
     init();
 
     getInfo();
