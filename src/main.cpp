@@ -88,20 +88,35 @@ void vertexSpec() {
     // Vertex specification
     // clang-format off
     const GLfloat vertexData[] = {
-         // 1
+         // 0
         -0.5f, -0.5f,  0.0f,  // Vertex position
          1.0f,  0.0f,  0.0f,  // Color
-         // 2
+         // 1
          0.5f, -0.5f,  0.0f,
          0.0f,  1.0f,  0.0f,
-         // 3
+         // 2
         -0.5f,  0.5f,  0.0f,
          0.0f,  0.0f,  1.0f,
-         // 4
+         // 3
          0.5f,  0.5f,  0.0f,
          1.0f,  0.0f,  0.0f,
+		 
+		 // 4
+		 0.5f, -0.5f, -1.0f,
+		 0.0f,  0.0f,  1.0f,
+		 
+		 // 5
+		 0.5f,  0.5f, -1.0f,
+		 0.0f,  1.0f,  0.0f,
+        // -0.5f, -0.5f, -1.0f,  
+        //  1.0f,  0.0f,  0.0f,  
+         // 6
+        // -0.5f,  0.5f, -1.0f, 
+        //  0.0f,  0.0f,  1.0f,
+         // 7
+		 
     };  // clang-format on
-    const GLuint elementData[] = {2, 0, 1, 3, 2, 1};
+    const GLuint elementData[] = { 2, 0, 1, 3, 2, 1, 4, 3, 1, 5, 3, 4 };
 
     vertexNumber = sizeof(vertexData) / sizeof(GLfloat) / VERTEXSIZE;
     elementNumber = sizeof(elementData) / sizeof(GLuint);
@@ -162,16 +177,20 @@ void preDraw() {
 
 void draw() {
     // Offset variables
-    float glOffset = 0.0f;
+    float zOffset = 0.0f;
+    float rotationAngle = 0.0f;
 
     // Retrieve uniforms' locations
-    struct glUniformMatrix uTranslation, uPerspective;
+    struct glUniformMatrix uTranslation, uPerspective, uRotationY;
+    uRotationY.name = "uRotationY";
     uTranslation.name = "uTranslation";
     uPerspective.name = "uPerspective";
     uTranslation.location =
         glGetUniformLocation(glPipeLineProgram, uTranslation.name);
     uPerspective.location =
         glGetUniformLocation(glPipeLineProgram, uPerspective.name);
+    uRotationY.location =
+        glGetUniformLocation(glPipeLineProgram, uRotationY.name);
 
     // Check locations
     if (uTranslation.location < 0) {
@@ -182,6 +201,11 @@ void draw() {
     if (uPerspective.location < 0) {
         printf("[ERROR] Couldn't find uniform `%s`, location: %d\n",
                uPerspective.name, uPerspective.location);
+        quit();
+    }
+    if (uRotationY.location < 0) {
+        printf("[ERROR] Couldn't find uniform `%s`, location: %d\n",
+               uRotationY.name, uRotationY.location);
         quit();
     }
 
@@ -196,26 +220,38 @@ void draw() {
         }
 
         const Uint8* state = SDL_GetKeyboardState(NULL);
+        if (state[SDL_SCANCODE_H]) {
+            rotationAngle += 1.0f;
+            printf("%f\n", rotationAngle);
+        }
+        if (state[SDL_SCANCODE_L]) {
+            rotationAngle -= 1.0f;
+            printf("%f\n", rotationAngle);
+			
+        }
         if (state[SDL_SCANCODE_K]) {
-            glOffset += 0.01f;
-            printf("%f\n", glOffset);  // LOG
+            zOffset += 0.01f;
         }
         if (state[SDL_SCANCODE_J]) {
-            glOffset -= 0.01f;
-            printf("%f\n", glOffset);  // LOG
+            zOffset -= 0.01f;
         }
 
         // Build matrices
         glm::mat4 translate =
-            glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, glOffset));
-        glm::mat4 perspective = glm::perspective(                // How close and far we can see
-            glm::radians(45.0f), (float)gWidth / (float)gHeight, 0.1f, 10.0f);
+            glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, zOffset));
+        glm::mat4 perspective =
+            glm::perspective(  // How close and far we can see
+                glm::radians(45.0f), (float)gWidth / (float)gHeight, 0.1f,
+                10.0f);
 
-		// Set uniforms
+        glm::mat4 rotationY = glm::rotate(glm::mat4(1.0f), glm::radians(rotationAngle),
+                                          glm::vec3(0.0f, 1.0f, 0.0f));
+        // Set uniforms
         glUniformMatrix4fv(uTranslation.location, 1, GL_FALSE,
                            &translate[0][0]);
         glUniformMatrix4fv(uPerspective.location, 1, GL_FALSE,
                            &perspective[0][0]);
+        glUniformMatrix4fv(uRotationY.location, 1, GL_FALSE, &rotationY[0][0]);
 
         // Draw
         glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
