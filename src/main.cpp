@@ -89,34 +89,33 @@ void vertexSpec() {
     // clang-format off
     const GLfloat vertexData[] = {
          // 0
-        -0.5f, -0.5f,  0.0f,  // Vertex position
+        -0.5f, -0.5f,  0.5f,  // Vertex position
          1.0f,  0.0f,  0.0f,  // Color
          // 1
-         0.5f, -0.5f,  0.0f,
+         0.5f, -0.5f,  0.5f,
          0.0f,  1.0f,  0.0f,
          // 2
-        -0.5f,  0.5f,  0.0f,
+        -0.5f,  0.5f,  0.5f,
          0.0f,  0.0f,  1.0f,
          // 3
-         0.5f,  0.5f,  0.0f,
+         0.5f,  0.5f,  0.5f,
          1.0f,  0.0f,  0.0f,
-		 
 		 // 4
-		 0.5f, -0.5f, -1.0f,
-		 0.0f,  0.0f,  1.0f,
-		 
-		 // 5
-		 0.5f,  0.5f, -1.0f,
+		 0.5f, -0.5f, -0.5f,
 		 0.0f,  1.0f,  0.0f,
-        // -0.5f, -0.5f, -1.0f,  
-        //  1.0f,  0.0f,  0.0f,  
-         // 6
-        // -0.5f,  0.5f, -1.0f, 
-        //  0.0f,  0.0f,  1.0f,
+		 // 5
+		 0.5f,  0.5f, -0.5f,
+		 0.0f,  0.0f,  1.0f,
+		 // 6
+        -0.5f, -0.5f, -0.5f,  
+         0.0f,  0.0f,  1.0f,  
          // 7
-		 
+        -0.5f,  0.5f, -0.5f, 
+         0.0f,  1.0f,  0.0f,
     };  // clang-format on
-    const GLuint elementData[] = { 2, 0, 1, 3, 2, 1, 4, 3, 1, 5, 3, 4 };
+    const GLuint elementData[] = {1, 2, 0, 1, 3, 2, 4, 3, 1, 4, 5, 3,
+                                  0, 7, 6, 0, 2, 7, 3, 7, 2, 3, 5, 7,
+                                  4, 1, 0, 4, 0, 6, 6, 7, 5, 6, 5, 4};
 
     vertexNumber = sizeof(vertexData) / sizeof(GLfloat) / VERTEXSIZE;
     elementNumber = sizeof(elementData) / sizeof(GLuint);
@@ -170,7 +169,8 @@ void shadersSpec() {
 
 void preDraw() {
     glDisable(GL_DEPTH_TEST);
-    glDisable(GL_CULL_FACE);
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
     glViewport(0, 0, gWidth, gHeight);
     glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 }
@@ -178,19 +178,20 @@ void preDraw() {
 void draw() {
     // Offset variables
     float zOffset = 0.0f;
-    float rotationAngle = 0.0f;
+    float rotationAngleX = 0.0f;
+    float rotationAngleY = 0.0f;
 
     // Retrieve uniforms' locations
-    struct glUniformMatrix uTranslation, uPerspective, uRotationY;
-    uRotationY.name = "uRotationY";
+    struct glUniformMatrix uTranslation, uPerspective, uRotation;
+    uRotation.name = "uRotation";
     uTranslation.name = "uTranslation";
     uPerspective.name = "uPerspective";
     uTranslation.location =
         glGetUniformLocation(glPipeLineProgram, uTranslation.name);
     uPerspective.location =
         glGetUniformLocation(glPipeLineProgram, uPerspective.name);
-    uRotationY.location =
-        glGetUniformLocation(glPipeLineProgram, uRotationY.name);
+    uRotation.location =
+        glGetUniformLocation(glPipeLineProgram, uRotation.name);
 
     // Check locations
     if (uTranslation.location < 0) {
@@ -203,9 +204,9 @@ void draw() {
                uPerspective.name, uPerspective.location);
         quit();
     }
-    if (uRotationY.location < 0) {
+    if (uRotation.location < 0) {
         printf("[ERROR] Couldn't find uniform `%s`, location: %d\n",
-               uRotationY.name, uRotationY.location);
+               uRotation.name, uRotation.location);
         quit();
     }
 
@@ -220,15 +221,19 @@ void draw() {
         }
 
         const Uint8* state = SDL_GetKeyboardState(NULL);
-        if (state[SDL_SCANCODE_H]) {
-            rotationAngle += 1.0f;
-            printf("%f\n", rotationAngle);
-        }
-        if (state[SDL_SCANCODE_L]) {
-            rotationAngle -= 1.0f;
-            printf("%f\n", rotationAngle);
-			
-        }
+        // if (state[SDL_SCANCODE_H]) {
+        //     rotationAngleY += 1.0f;
+        // }
+        // if (state[SDL_SCANCODE_L]) {
+        //     rotationAngleY -= 1.0f;
+        // }
+        // if (state[SDL_SCANCODE_K]) {
+        //     rotationAngleX += 1.0f;
+        // }
+        // if (state[SDL_SCANCODE_J]) {
+        //     rotationAngleX -= 1.0f;
+        // }
+
         if (state[SDL_SCANCODE_K]) {
             zOffset += 0.01f;
         }
@@ -236,22 +241,29 @@ void draw() {
             zOffset -= 0.01f;
         }
 
-        // Build matrices
-        glm::mat4 translate =
-            glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, zOffset));
-        glm::mat4 perspective =
-            glm::perspective(  // How close and far we can see
-                glm::radians(45.0f), (float)gWidth / (float)gHeight, 0.1f,
-                10.0f);
+        rotationAngleX += 1.0f;
+        rotationAngleY += 1.0f;
 
-        glm::mat4 rotationY = glm::rotate(glm::mat4(1.0f), glm::radians(rotationAngle),
-                                          glm::vec3(0.0f, 1.0f, 0.0f));
+        // Build matrices
+        glm::mat4 translate = glm::translate(
+            glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, zOffset - 3.0f));
+        glm::mat4 perspective = glm::perspective(
+            glm::radians(45.0f), (float)gWidth / (float)gHeight, 0.1f, 10.0f);
+        glm::mat4 rotationY =
+            glm::rotate(glm::mat4(1.0f), glm::radians(rotationAngleY),
+                        glm::vec3(0.0f, 1.0f, 0.0f));
+        glm::mat4 rotationX =
+            glm::rotate(glm::mat4(1.0f), glm::radians(rotationAngleX),
+                        glm::vec3(1.0f, 0.0f, 0.0f));
+
+        glm::mat4 rotation = rotationY * rotationX;
+
         // Set uniforms
+        glUniformMatrix4fv(uRotation.location, 1, GL_FALSE, &rotation[0][0]);
         glUniformMatrix4fv(uTranslation.location, 1, GL_FALSE,
                            &translate[0][0]);
         glUniformMatrix4fv(uPerspective.location, 1, GL_FALSE,
                            &perspective[0][0]);
-        glUniformMatrix4fv(uRotationY.location, 1, GL_FALSE, &rotationY[0][0]);
 
         // Draw
         glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
