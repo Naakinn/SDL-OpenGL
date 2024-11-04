@@ -1,8 +1,10 @@
 ## Preview 
 ![](preview.png)
-### Install dependencies 
+## Controls: 
+- j/k - move cube backwards/towards
+## Install dependencies 
 - GLM: https://github.com/g-truc/glm?tab=readme-ov-file#build-and-install
-### Build
+## Build
 ```
 $ cmake -B build
 $ cmake --build build 
@@ -12,7 +14,7 @@ $ cmake --build build
 $ cmake -B build -DDEBUG 
 $ cmake --build build 
 ```
-### Run 
+## Run 
 ```
 $ ./engine
 ```
